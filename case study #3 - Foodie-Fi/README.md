@@ -37,12 +37,57 @@ When customers churn - they will keep their access until the end of their curren
 ## Case Study Questions & Solutions
 ### A. Data Analysis Questions
 #### 1. How many customers has Foodie-Fi ever had?
-I use the `COUNT()` function combined with `DISTINCT` to get the count of unique customers
+- Use  `COUNT()` function combined with `DISTINCT` to get the count of unique customers
 ```mysql
 SELECT COUNT(DISTINCT s.customer_id) AS total_customer
 FROM subscriptions s;
 ```
 **Answer:**
 
+<img width="150" alt="Screen Shot 2024-01-10 at 09 24 15" src="https://github.com/chile2706/8-week-sql/assets/147631781/c9b4ff51-42c2-40ce-9980-034bdc324ed9">
+
 
 #### 2. What is the monthly distribution of trial plan start_date values for our dataset - use the start of the month as the group by value
+- Use `GROUP BY` to group the total users by month
+- Filter the results so that the user's `plan_id` is 0 for each month
+```mysql
+SELECT MONTH(s.start_date) as ind, MONTHNAME(s.start_date) as month, COUNT(s.plan_id) as count 
+FROM subscriptions s
+WHERE s.plan_id = 0
+GROUP BY ind,month 
+ORDER BY ind ASC;
+```
+**Answer:**
+
+<img width="185" alt="Screen Shot 2024-01-10 at 09 36 03" src="https://github.com/chile2706/8-week-sql/assets/147631781/b79fd36c-e52a-4240-9d24-4439d08de735">
+
+#### 3. What plan start_date values occur after the year 2020 for our dataset? Show the breakdown by count of events for each plan_name
+- determine the count of each plan by using `GROUP BY` and `COUNT(start_date)`
+- filter the results with `start_date >= '2021-01-01'`
+- `JOIN` plans and subscriptions to get `plan_name`
+```mysql
+SELECT p.plan_id, p.plan_name, COUNT(s.start_date) AS count
+FROM subscriptions s
+NATURAL JOIN plans p
+WHERE s.start_date >= '2021-01-01'
+GROUP BY p.plan_id, p.plan_name
+ORDER BY p.plan_id;
+```
+**Answer:**
+
+<img width="200" alt="Screen Shot 2024-01-10 at 09 44 12" src="https://github.com/chile2706/8-week-sql/assets/147631781/7a62bb67-0737-4dee-b454-7b4a3f086e74">
+
+#### 4. What is the customer count and percentage of customers who have churned rounded to 1 decimal place?
+-  use `CASE` to filter out customers who churned
+-  use `ROUND` to roud the percentage to 1 decimal place
+```mysql
+SELECT
+SUM(CASE WHEN s.plan_id = 4 THEN 1 ELSE 0 END) AS churned_customers,
+ROUND(SUM(CASE WHEN s.plan_id = 4 THEN 1 ELSE 0 END)/COUNT(DISTINCT s.customer_id)*100,1) AS percentage
+FROM subscriptions s;
+```
+**Answer:**
+
+<img width="230" alt="Screen Shot 2024-01-10 at 09 50 18" src="https://github.com/chile2706/8-week-sql/assets/147631781/7ab49ca0-7088-4d79-9a8e-1149cdb48710">
+
+
