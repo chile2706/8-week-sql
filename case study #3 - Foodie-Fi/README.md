@@ -81,8 +81,8 @@ ORDER BY p.plan_id;
 <img width="200" alt="Screen Shot 2024-01-10 at 09 44 12" src="https://github.com/chile2706/8-week-sql/assets/147631781/7a62bb67-0737-4dee-b454-7b4a3f086e74">
 
 #### 4. What is the customer count and percentage of customers who have churned rounded to 1 decimal place?
--  use `CASE` to filter out customers who churned
--  use `ROUND` to roud the percentage to 1 decimal place
+-  Use `CASE` to filter out customers who churned
+-  Use `ROUND` to roud the percentage to 1 decimal place
 ```mysql
 SELECT
   SUM(CASE WHEN s.plan_id = 4 THEN 1 ELSE 0 END) AS churned_customers,
@@ -94,8 +94,8 @@ FROM subscriptions s;
 <img width="230" alt="Screen Shot 2024-01-10 at 09 50 18" src="https://github.com/chile2706/8-week-sql/assets/147631781/7ab49ca0-7088-4d79-9a8e-1149cdb48710">
 
 #### 5. How many customers have churned straight after their initial free trial - what percentage is this rounded to the nearest whole number?
-- if a customer churned right after their initial free trial, the count of their customer_id in the subscriptions table would be 2 (the trial plan and the churn plan)
-- thus, determine the number of customers who churned and only had 2 records in the subscriptions table
+- If a customer churned right after their initial free trial, the count of their customer_id in the subscriptions table would be 2 (the trial plan and the churn plan)
+- Thus, determine the number of customers who churned and only had 2 records in the subscriptions table
 ```mysql
 SELECT
   c.count, round(c.count/1000*100,0) as percentage
@@ -117,8 +117,8 @@ FROM (
 <img width="150" alt="Screen Shot 2024-01-10 at 10 40 24" src="https://github.com/chile2706/8-week-sql/assets/147631781/fb352fed-48a5-4950-8460-774c1f820c60">
 
 #### 6. What is the number and percentage of customer plans after their initial free trial?
-- approach: rank the customer choice of plan in ascending order by `start_date`, then the first plan would be the trial plan and the `second` one is what you are looking for
-- use `RANK() OVER(PARTITION BY ORDER BY)` to rank the customer choice of plan and choose `plan_id` which its ranking is 2
+- Approach: rank the customer choice of plan in ascending order by `start_date`, then the first plan would be the trial plan and the `second` one is what you are looking for
+- Use `RANK() OVER(PARTITION BY ORDER BY)` to rank the customer choice of plan and choose `plan_id` which its ranking is 2
 
 ```mysql
 SELECT
@@ -138,10 +138,10 @@ ORDER BY t.plan_id;
 <img width="330" alt="Screen Shot 2024-01-10 at 10 40 41" src="https://github.com/chile2706/8-week-sql/assets/147631781/05c70070-0bc2-4942-be87-1230b4a9d99c">
 
 #### 7. What is the customer count and percentage breakdown of all 5 plan_name values at 2020-12-31?
-- approach: filter out customers that were in the system before 2021, find the last plan of customers before 2021
-- use `SUM(IF (s.start_date <= '2020-12-31', 1, 0)) AS date_check` to find how many plans a customer switched to before 2021
-- use `RANK() OVER (PARTITION BY s.customer_id ORDER BY s.start_date ASC)` to rank the customer plan according to `start_date`
-- return the `plan_id` where its ranking = `date_check` of a customer: this is the `plan_id` of the customer at 2020-12-31
+- Approach: filter out customers that were in the system before 2021, find the last plan of customers before 2021
+- Use `SUM(IF (s.start_date <= '2020-12-31', 1, 0)) AS date_check` to find how many plans a customer switched to before 2021
+- Use `RANK() OVER (PARTITION BY s.customer_id ORDER BY s.start_date ASC)` to rank the customer plan according to `start_date`
+- Return the `plan_id` where its ranking = `date_check` of a customer: this is the `plan_id` of the customer at 2020-12-31
 - 
 ```mysql
 SELECT
@@ -168,7 +168,7 @@ GROUP BY b.plan_id, p.plan_name;
 <img width="250" alt="Screen Shot 2024-01-10 at 10 55 18" src="https://github.com/chile2706/8-week-sql/assets/147631781/ba045b0e-31b7-41cb-9b2e-3e39904c3d74">
 
 ####  8. How many customers have upgraded to an annual plan in 2020?
-- approach: filter out customers whose record of `plan_name = 'pro annual'` and `start_date` in 2020 exists
+- Approach: filter out customers whose record of `plan_name = 'pro annual'` and `start_date` in 2020 exists
 
 ```mysql
 SELECT COUNT(DISTINCT s.customer_id) AS count
@@ -181,9 +181,9 @@ AND s.start_date BETWEEN '2020-01-01' AND '2020-12-31';
 <img width="50" alt="Screen Shot 2024-01-10 at 11 00 06" src="https://github.com/chile2706/8-week-sql/assets/147631781/5e83fc35-3308-4987-af84-fa5e3d128dea">
 
 #### 9. How many days on average does it take for a customer to an annual plan from the day they join Foodie-Fi?
-- approach: filter out customers that did upgrade to `annual plan` and calcualte the difference between `start_date` and `upgrade_date`
-- use `INNER JOIN` to filter out customers had annual plan
-- use `DATEDIFF()` to find the difference between `start_date` and `upgrade_date`
+- Approach: filter out customers that did upgrade to `annual plan` and calcualte the difference between `start_date` and `upgrade_date`
+- Use `INNER JOIN` to filter out customers had annual plan
+- Use `DATEDIFF()` to find the difference between `start_date` and `upgrade_date`
 ```mysql
 SELECT
   ROUND(SUM(DATEDIFF(b.upgrade_date, a.start_date))/COUNT(DISTINCT b.customer_id), 0) AS avg_day
@@ -204,9 +204,9 @@ ON a.customer_id = b.customer_id;
 <img width="70" alt="Screen Shot 2024-01-10 at 11 11 06" src="https://github.com/chile2706/8-week-sql/assets/147631781/2d9c5aab-1d24-4ce4-b1b7-d07d9dcf566b">
 
 #### 10. Can you further breakdown this average value into 30 day periods (i.e. 0-30 days, 31-60 days etc)
-- approach: calculate the date difference like in Q9 and then categorize the difference into each period
-- use `CEIL(DATEDIFF(b.upgrade_date, a.start_date)/30)` and `GROUP BY` to categorize the date difference into each period
-- use `CONCAT()` to format the string `'XX - XX days'`
+- Approach: calculate the date difference like in Q9 and then categorize the difference into each period
+- Use `CEIL(DATEDIFF(b.upgrade_date, a.start_date)/30)` and `GROUP BY` to categorize the date difference into each period
+- Use `CONCAT()` to format the string `'XX - XX days'`
 
 ```mysql
 SELECT
@@ -234,9 +234,9 @@ ORDER BY c.days ASC;
 <img width="200" alt="Screen Shot 2024-01-10 at 11 23 10" src="https://github.com/chile2706/8-week-sql/assets/147631781/0d637821-99d4-4e45-845c-5dff54317705">
 
 #### 11. How many customers downgraded from a pro monthly to a basic monthly plan in 2020?
-- approach: ranking records of each customer by start_date, determine the number of customers whose ranking of `pro_monthly` is smaller than `basic_monthly`
-- use  `RANK() OVER(PARTITION BY s.customer_id ORDER BY s.start_date ASC)` to rank
-- use `INNER JOIN` to filter out customers had at least once subscribed to pro_monthly
+- Approach: ranking records of each customer by start_date, determine the number of customers whose ranking of `pro_monthly` is smaller than `basic_monthly`
+- Use  `RANK() OVER(PARTITION BY s.customer_id ORDER BY s.start_date ASC)` to rank
+- Use `INNER JOIN` to filter out customers had at least once subscribed to pro_monthly
 
 ```mysql
 SELECT count(b.customer_id) as count
