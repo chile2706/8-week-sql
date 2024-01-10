@@ -4,7 +4,7 @@
 ## Table of Contents
 * [Case Study Introduction](#case-study-introduction)
 * [Entity Relationship Diagram](#entity-relationship-diagram)
-* [Case Study Questions & Solutions](#case-study-questions-&-solutions)
+* [Case Study Questions & Solutions](#case-study-questions)
 ---
 ## Case Study Introduction
 Danny with his friends launched the startup Foodie-Fi, new streaming service that only had food related content - something like Netflix but with only cooking shows, in 2020 and started selling monthly and annual subscriptions, giving their customers unlimited on-demand access to exclusive food videos from around the world!
@@ -35,7 +35,7 @@ When customers upgrade their account from a basic plan to a pro or annual pro pl
 
 When customers churn - they will keep their access until the end of their current billing period but the `start_date` will be technically the day they decided to cancel their service.
 
-## Case Study Questions & Solutions
+## Case Study Questions
 ### A. Data Analysis Questions
 #### 1. How many customers has Foodie-Fi ever had?
 - Use  `COUNT()` function combined with `DISTINCT` to get the count of unique customers
@@ -199,5 +199,71 @@ INNER JOIN
   GROUP BY s.customer_id) b 
 ON a.customer_id = b.customer_id;
 ```
+**Answers:**
 
+<img width="70" alt="Screen Shot 2024-01-10 at 11 11 06" src="https://github.com/chile2706/8-week-sql/assets/147631781/2d9c5aab-1d24-4ce4-b1b7-d07d9dcf566b">
+
+#### 10. Can you further breakdown this average value into 30 day periods (i.e. 0-30 days, 31-60 days etc)
+- approach: calculate the date difference like in Q9 and then categorize the difference into each period
+- use `CEIL(DATEDIFF(b.upgrade_date, a.start_date)/30)` and `GROUP BY` to categorize the date difference into each period
+- use `CONCAT()` to format the string `'XX - XX days'`
+
+```mysql
+SELECT
+  CONCAT((days - 1)*30 + 1, '-', days*30, ' days') AS 30_day_period, c.count
+FROM
+  (SELECT 
+    CEIL(DATEDIFF(b.upgrade_date, a.start_date)/30) AS days,
+    COUNT( b.customer_id) AS count
+  FROM
+    (SELECT s.customer_id, MIN(s.start_date) AS start_date
+    FROM subscriptions s
+    GROUP BY s.customer_id) a
+  INNER JOIN 
+    (SELECT s.customer_id, MIN(s.start_date) AS upgrade_date
+    FROM subscriptions s
+    WHERE s.plan_id IN (SELECT p.plan_id FROM plans p WHERE p.plan_name = 'pro annual')
+    GROUP BY s.customer_id) b 
+  ON a.customer_id = b.customer_id
+  GROUP BY days) c
+ORDER BY c.days ASC;
+```
+
+**Answers:**
+
+<img width="200" alt="Screen Shot 2024-01-10 at 11 23 10" src="https://github.com/chile2706/8-week-sql/assets/147631781/0d637821-99d4-4e45-845c-5dff54317705">
+
+#### 11. How many customers downgraded from a pro monthly to a basic monthly plan in 2020?
+- approach: ranking records of each customer by start_date, determine the number of customers whose ranking of `pro_monthly` is smaller than `basic_monthly`
+- use  `RANK() OVER(PARTITION BY s.customer_id ORDER BY s.start_date ASC)` to rank
+- use `INNER JOIN` to filter out customers had at least once subscribed to pro_monthly
+
+```mysql
+SELECT count(b.customer_id) as count
+FROM
+  (SELECT a.customer_id, a.ranking AS pro_rank
+  FROM
+    (SELECT
+      s.customer_id, s.plan_id, s.start_date,
+      RANK() OVER(PARTITION BY s.customer_id ORDER BY s.start_date ASC) AS ranking
+    FROM subscriptions s
+    WHERE s.start_date BETWEEN '2020-01-01' AND '2020-12-31') a
+  WHERE
+    a.plan_id IN (SELECT p.plan_id FROM plans p WHERE p.plan_name = 'pro monthly')) b
+  INNER JOIN
+  (SELECT c.customer_id, c.ranking AS basic_rank
+  FROM
+    (SELECT
+      s.customer_id, s.plan_id, s.start_date,
+      RANK() OVER(PARTITION BY s.customer_id ORDER BY s.start_date ASC) AS ranking
+    FROM subscriptions s
+    WHERE s.start_date BETWEEN '2020-01-01' AND '2020-12-31') c
+  WHERE c.plan_id IN (SELECT p.plan_id FROM plans p WHERE p.plan_name = 'basic monthly')) d
+ON d.customer_id = b.customer_id
+WHERE b.pro_rank < d.basic_rank;
+```
+
+**Answer:**
+
+<img width="50" alt="Screen Shot 2024-01-10 at 12 49 08" src="https://github.com/chile2706/8-week-sql/assets/147631781/a640c5d0-2230-4eff-b20b-8ddef2bec761">
 
