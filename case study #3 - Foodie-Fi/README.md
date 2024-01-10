@@ -1,5 +1,6 @@
 # Case Study #3 - Foodie-Fi
-![image](https://github.com/chile2706/8-week-sql/assets/147631781/c71c6e7b-8480-4d95-a0d5-d345893a75bf)
+<img width="400" src ="https://github.com/chile2706/8-week-sql/assets/147631781/e6299734-ff9c-4336-b896-a1304311c525">
+
 ## Table of Contents
 * [Case Study Introduction](#case-study-introduction)
 * [Entity Relationship Diagram](#entity-relationship-diagram)
@@ -111,6 +112,92 @@ FROM (
     WHERE s.plan_id = 4) b
   ON a.customer_id = b.customer_id) c;
 ```
+**Answer:**
+
+<img width="150" alt="Screen Shot 2024-01-10 at 10 40 24" src="https://github.com/chile2706/8-week-sql/assets/147631781/fb352fed-48a5-4950-8460-774c1f820c60">
+
 #### 6. What is the number and percentage of customer plans after their initial free trial?
+- approach: rank the customer choice of plan in ascending order by `start_date`, then the first plan would be the trial plan and the `second` one is what you are looking for
+- use `RANK() OVER(PARTITION BY ORDER BY)` to rank the customer choice of plan and choose `plan_id` which its ranking is 2
+
+```mysql
+SELECT
+  t.plan_id, p.plan_name,
+  COUNT(t.plan_id) AS count,
+  ROUNF(COUNT(t.plan_id)/(SELECT COUNT(DISTINCT s.customer_id) FROM subscriptions s)*100,1) AS percentage 
+FROM
+  (SELECT s.customer_id, s.plan_id, RANK() OVER(PARTITION BY s.customer_id ORDER BY start_date ASC)AS ranking
+  FROM subscriptions s) t
+NATURAL JOIN plans p
+WHERE t.ranking = 2
+GROUP BY t.plan_id, p.plan_name
+ORDER BY t.plan_id;
+```
+**Answer:**
+
+<img width="330" alt="Screen Shot 2024-01-10 at 10 40 41" src="https://github.com/chile2706/8-week-sql/assets/147631781/05c70070-0bc2-4942-be87-1230b4a9d99c">
+
+#### 7. What is the customer count and percentage breakdown of all 5 plan_name values at 2020-12-31?
+- approach: filter out customers that were in the system before 2021, find the last plan of customers before 2021
+- use `SUM(IF (s.start_date <= '2020-12-31', 1, 0)) AS date_check` to find how many plans a customer switched to before 2021
+- use `RANK() OVER (PARTITION BY s.customer_id ORDER BY s.start_date ASC)` to rank the customer plan according to `start_date`
+- return the `plan_id` where its ranking = `date_check` of a customer: this is the `plan_id` of the customer at 2020-12-31
+- 
+```mysql
+SELECT
+  b.plan_id, p.plan_name, COUNT(b.plan_id) AS count,
+  ROUND(COUNT(b.plan_id)/(SELECT COUNT(DISTINCT s.customer_id) FROM subscriptions s WHERE s.start_date <= '2020-12-31')*100,0) AS percent
+FROM
+  (SELECT
+    s.customer_id, s.plan_id,
+    RANK() OVER (PARTITION BY s.customer_id ORDER BY s.start_date ASC) AS ranking, a.date_check
+  FROM subscriptions s 
+  LEFT JOIN
+    (SELECT
+      s.customer_id, SUM(IF (s.start_date <= '2020-12-31', 1, 0)) AS date_check
+    FROM subscriptions s
+    GROUP BY s.customer_id
+    HAVING MIN(s.start_date) <= '2020-12-31') a 
+  ON a.customer_id = s.customer_id) b
+NATURAL JOIN plans p
+WHERE b.ranking = b.date_check
+GROUP BY b.plan_id, p.plan_name;
+```
+**Answer:**
+
+<img width="250" alt="Screen Shot 2024-01-10 at 10 55 18" src="https://github.com/chile2706/8-week-sql/assets/147631781/ba045b0e-31b7-41cb-9b2e-3e39904c3d74">
+
+####  8. How many customers have upgraded to an annual plan in 2020?
+- approach: filter out customers whose record of `plan_name = 'pro annual'` and `start_date` in 2020 exists
+
+```mysql
+SELECT COUNT(DISTINCT s.customer_id) AS count
+FROM subscriptions s
+WHERE s.plan_id IN (SELECT p.plan_id FROM plans p WHERE p.plan_name = 'pro annual')
+AND s.start_date BETWEEN '2020-01-01' AND '2020-12-31';
+```
+**Answers:**
+
+<img width="50" alt="Screen Shot 2024-01-10 at 11 00 06" src="https://github.com/chile2706/8-week-sql/assets/147631781/5e83fc35-3308-4987-af84-fa5e3d128dea">
+
+#### 9. How many days on average does it take for a customer to an annual plan from the day they join Foodie-Fi?
+- approach: filter out customers that did upgrade to `annual plan` and calcualte the difference between `start_date` and `upgrade_date`
+- use `INNER JOIN` to filter out customers had annual plan
+- use `DATEDIFF()` to find the difference between `start_date` and `upgrade_date`
+```mysql
+SELECT
+  ROUND(SUM(DATEDIFF(b.upgrade_date, a.start_date))/COUNT(DISTINCT b.customer_id), 0) AS avg_day
+FROM
+  (SELECT s.customer_id, MIN(s.start_date) AS start_date
+  FROM subscriptions s
+  GROUP BY s.customer_id) a
+INNER JOIN
+  (SELECT s.customer_id, MIN(s.start_date) as upgrade_date
+  FROM subscriptions s
+  WHERE
+    s.plan_id IN (SELECT p.plan_id FROM plans p WHERE p.plan_name = 'pro annual')
+  GROUP BY s.customer_id) b 
+ON a.customer_id = b.customer_id;
+```
 
 
