@@ -66,7 +66,9 @@ ORDER BY ind ASC;
 - filter the results with `start_date >= '2021-01-01'`
 - `JOIN` plans and subscriptions to get `plan_name`
 ```mysql
-SELECT p.plan_id, p.plan_name, COUNT(s.start_date) AS count
+SELECT
+  p.plan_id, p.plan_name,
+  COUNT(s.start_date) AS count
 FROM subscriptions s
 NATURAL JOIN plans p
 WHERE s.start_date >= '2021-01-01'
@@ -82,12 +84,33 @@ ORDER BY p.plan_id;
 -  use `ROUND` to roud the percentage to 1 decimal place
 ```mysql
 SELECT
-SUM(CASE WHEN s.plan_id = 4 THEN 1 ELSE 0 END) AS churned_customers,
-ROUND(SUM(CASE WHEN s.plan_id = 4 THEN 1 ELSE 0 END)/COUNT(DISTINCT s.customer_id)*100,1) AS percentage
+  SUM(CASE WHEN s.plan_id = 4 THEN 1 ELSE 0 END) AS churned_customers,
+  ROUND(SUM(CASE WHEN s.plan_id = 4 THEN 1 ELSE 0 END)/COUNT(DISTINCT s.customer_id)*100,1) AS percentage
 FROM subscriptions s;
 ```
 **Answer:**
 
 <img width="230" alt="Screen Shot 2024-01-10 at 09 50 18" src="https://github.com/chile2706/8-week-sql/assets/147631781/7ab49ca0-7088-4d79-9a8e-1149cdb48710">
+
+#### 5. How many customers have churned straight after their initial free trial - what percentage is this rounded to the nearest whole number?
+- if a customer churned right after their initial free trial, the count of their customer_id in the subscriptions table would be 2 (the trial plan and the churn plan)
+- thus, determine the number of customers who churned and only had 2 records in the subscriptions table
+```mysql
+SELECT
+  c.count, round(c.count/1000*100,0) as percentage
+FROM (
+  SELECT count(a.customer_id) AS count
+  FROM (
+    SELECT s.customer_id, count(s.customer_id) AS count
+    FROM subscriptions s
+    GROUP BY s.customer_id
+    HAVING count = 2) a
+  INNER JOIN (
+    SELECT distinct s.customer_id
+    FROM subscriptions s
+    WHERE s.plan_id = 4) b
+  ON a.customer_id = b.customer_id) c;
+```
+#### 6. What is the number and percentage of customer plans after their initial free trial?
 
 
