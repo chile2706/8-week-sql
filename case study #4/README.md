@@ -67,19 +67,42 @@ ORDER BY cn.region_id;
 #### 3. How many customers are allocated to each region?
 - Use `GROUP BY()` and `COUNT(DISTINCT)` to count unique customers in each region
 ```MYSQL
-select cn.region_id, r.region_name, count(distinct cn.customer_id) as total_customers
-from customer_nodes cn
-natural join regions r
-group by cn.region_id, r.region_name
-order by cn.region_id;
+SELECT cn.region_id, r.region_name, COUNT(DISTINCT cn.customer_id) AS total_customers
+FROM customer_nodes cn
+NATURAL JOIN regions r
+GROUP BY cn.region_id, r.region_name
+ORDER BY cn.region_id;
 ```
 **Answer:**
 
 <img width="250" alt="Screen Shot 2024-01-18 at 16 30 17" src="https://github.com/chile2706/8-week-sql/assets/147631781/47c40470-c43e-4095-a8d4-2fcc0e22f64e">
 
 #### 4. How many days on average are customers reallocated to a different node?
+- Use `DATEDIFF()` to calculate the time duration of each customer on each node
+- Use `AVG()` to caculate the average
+```mysql
+SELECT ROUND(AVG(DATEDIFF(cn.end_date, cn.start_date)), 0) AS avg_day
+FROM customer_nodes cn
+WHERE cn.end_date != '9999-12-31';
+```
+**Answer:**
+
+<img width="80" alt="Screen Shot 2024-01-18 at 16 36 01" src="https://github.com/chile2706/8-week-sql/assets/147631781/a72ecc59-d7f7-4f32-a122-a2736bdb7475">
 
 #### 5. What is the median, 80th, and 95th percentile for this same reallocation days metric for each region?
+- Create view `percentile` to calculate the order of the relocation days for eadch percentile  
+```mysql
+create view percentile as
+select a.region_id, round(a.total_relocate*0.5,0) as '50th', round(a.total_relocate*0.85,0) as '85th', round(a.total_relocate*0.9,0) as '90th'
+from
+(select cn.region_id, count(cn.customer_id) as total_relocate
+from customer_nodes cn
+where cn.end_date != '9999-12-31'
+group by cn.region_id
+order by cn.region_id) a;
+```
+<img width="180" alt="Screen Shot 2024-01-18 at 16 44 52" src="https://github.com/chile2706/8-week-sql/assets/147631781/d163d210-5857-4f3f-a622-5b5164d4e8b0">
+
 ### B. Customer Transactions
 ### C. Data Allocation Challenge
 
