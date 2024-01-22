@@ -1,4 +1,4 @@
-# Case Study #4 - Data Bank
+<img width="283" alt="Screen Shot 2024-01-22 at 16 44 59" src="https://github.com/chile2706/8-week-sql/assets/147631781/ed02f49e-df9b-48eb-9fe2-127a14333857"># Case Study #4 - Data Bank
 <img width ="500" src ="https://github.com/chile2706/8-week-sql/assets/147631781/27227b2a-f876-49ff-9769-79d56008f377">
 
 ## Table of Contents
@@ -57,7 +57,9 @@ GROUP BY cn.region_id) a;
 #### 2. What is the number of nodes per region?
 - Use `GROUP BY()` and `COUNT(DISTINCT)` to count unique nodes in each region
 ```mysql
-SELECT cn.region_id, r.region_name, COUNT(DISTINCT cn.customer_id) AS total_customers
+SELECT
+  cn.region_id, r.region_name,
+  COUNT(DISTINCT cn.customer_id) AS total_customers
 FROM customer_nodes cn
 NATURAL JOIN regions r
 GROUP BY cn.region_id, r.region_name
@@ -70,7 +72,9 @@ ORDER BY cn.region_id;
 #### 3. How many customers are allocated to each region?
 - Use `GROUP BY()` and `COUNT(DISTINCT)` to count unique customers in each region
 ```MYSQL
-SELECT cn.region_id, r.region_name, COUNT(DISTINCT cn.customer_id) AS total_customers
+SELECT
+  cn.region_id, r.region_name,
+  COUNT(DISTINCT cn.customer_id) AS total_customers
 FROM customer_nodes cn
 NATURAL JOIN regions r
 GROUP BY cn.region_id, r.region_name
@@ -96,19 +100,22 @@ WHERE cn.end_date != '9999-12-31';
 - Create view `percentile` to calculate the order of the relocation days for eadch percentile  
 ```mysql
 CREATE VIEW percentile AS
-SELECT a.region_id, ROUND(a.total_relocate*0.5,0) AS '50th', ROUND(a.total_relocate*0.85,0) AS '85th', ROUND(a.total_relocate*0.9,0) AS '90th'
+SELECT a.region_id,
+  ROUND(a.total_relocate*0.5,0) AS '50th',
+  ROUND(a.total_relocate*0.85,0) AS '85th',
+  ROUND(a.total_relocate*0.9,0) AS '90th'
 FROM
-(SELECT cn.region_id, COUNT(cn.customer_id) AS total_relocate
-FROM customer_nodes cn
-WHERE cn.end_date != '9999-12-31'
-GROUP BY cn.region_id
-ORDER BY cn.region_id) a;
+  (SELECT cn.region_id, COUNT(cn.customer_id) AS total_relocate
+  FROM customer_nodes cn
+  WHERE cn.end_date != '9999-12-31'
+  GROUP BY cn.region_id
+  ORDER BY cn.region_id) a;
 ```
 <img width="180" alt="Screen Shot 2024-01-18 at 16 44 52" src="https://github.com/chile2706/8-week-sql/assets/147631781/d163d210-5857-4f3f-a622-5b5164d4e8b0">
 
 - Unpivot the `percentile` view
 ```mysql
-SELECT p.region_id, '50th' as percent, p.50th as ranking from percentile p
+SELECT p.region_id, '50th' as percent, p.50th AS ranking from percentile p
 UNION ALL
 SELECT p.region_id, '85th', p.85th FROM percentile p
 UNION ALL
@@ -120,7 +127,9 @@ SELECT p.region_id, '90th', p.90th FROM percentile p;
 
 - Use `ROW_NUMBER()` to assign the order to date diff to match with the relocation days for each percentile later.
 ```MYSQL
-SELECT cn.region_id, DATEDIFF(cn.end_date, cn.start_date) AS days, ROW_NUMBER() OVER(PARTITION BY cn.region_id ORDER BY DATEDIFF(cn.end_date, cn.start_date)) AS ranking
+SELECT cn.region_id,
+  DATEDIFF(cn.end_date, cn.start_date) AS days,
+  ROW_NUMBER() OVER(PARTITION BY cn.region_id ORDER BY DATEDIFF(cn.end_date, cn.start_date)) AS ranking
 FROM customer_nodes cn
 WHERE cn.end_date != '9999-12-31'
 ```
@@ -130,16 +139,19 @@ WHERE cn.end_date != '9999-12-31'
 ```mysql
 SELECT a.region_id, a.percent, b.ranking, b.days
 FROM
-(SELECT p.region_id, '50th' as percent, p.50th as ranking from percentile p
-UNION ALL
-SELECT p.region_id, '85th', p.85th FROM percentile p
-UNION ALL
-select p.region_id, '90th', p.90th FROM percentile p) a
+  (SELECT p.region_id, '50th' AS percent, p.50th AS ranking FROM percentile p
+  UNION ALL
+  SELECT p.region_id, '85th', p.85th FROM percentile p
+  UNION ALL
+  SELECT p.region_id, '90th', p.90th FROM percentile p) a
 INNER JOIN
-(SELECT cn.region_id, DATEDIFF(cn.end_date, cn.start_date) AS days, ROW_NUMBER() OVER(PARTITION BY cn.region_id ORDER BY DATEDIFF(cn.end_date, cn.start_date)) AS ranking
-FROM customer_nodes cn
-WHERE cn.end_date != '9999-12-31') b
-ON a.ranking = b.ranking AND a.region_id = b.region_id
+  (SELECT cn.region_id,
+    DATEDIFF(cn.end_date, cn.start_date) AS days,
+    ROW_NUMBER() OVER(PARTITION BY cn.region_id ORDER BY DATEDIFF(cn.end_date, cn.start_date)) AS ranking
+  FROM customer_nodes cn
+  WHERE cn.end_date != '9999-12-31') b
+ON a.ranking = b.ranking
+AND a.region_id = b.region_id
 ORDER BY region_id;
 ```
 <img width="182" alt="Screen Shot 2024-01-22 at 16 17 25" src="https://github.com/chile2706/8-week-sql/assets/147631781/5dfcdabc-a6da-4f95-a2c5-372ffa4cb9af">
@@ -148,9 +160,9 @@ ORDER BY region_id;
 
 ```mysql
 SELECT c.region_id, 
-SUM(CASE WHEN c.percent = '50th' THEN c.days ELSE 0 END ) AS '50th',
-SUM(CASE WHEN c.percent = '85th' THEN c.days ELSE 0 END ) AS '85th',
-SUM(CASE WHEN c.percent = '90th' THEN c.days ELSE 0 END ) AS '90th'
+  SUM(CASE WHEN c.percent = '50th' THEN c.days ELSE 0 END ) AS '50th',
+  SUM(CASE WHEN c.percent = '85th' THEN c.days ELSE 0 END ) AS '85th',
+  SUM(CASE WHEN c.percent = '90th' THEN c.days ELSE 0 END ) AS '90th'
 FROM
 (SELECT a.region_id, a.percent, b.ranking, b.days
 FROM
@@ -206,8 +218,82 @@ WHERE ct.txn_type = 'deposit';
 
 #### 3. For each month - how many Data Bank customers make more than 1 deposit and either 1 purchase or 1 withdrawal in a single month?
 
-#### 4. What is the closing balance for each customer at the end of the month?
+- Use `GROUP BY()` and `CASE WHEN` to count how many times a month did each customer make deposit, purchase or withdrawal
+```mysql
+SELECT MONTH(ct.txn_date) AS month_id, ct.customer_id,
+    SUM(CASE WHEN ct.txn_type = 'deposit' THEN 1 ELSE 0 END) AS deposit,
+    SUM(CASE WHEN ct.txn_type = 'withdrawal' THEN 1 ELSE 0 END) AS withdrawal,
+    SUM(CASE WHEN ct.txn_type = 'purchase' THEN 1 ELSE 0 end) AS purchase
+  FROM customer_transactions ct
+  GROUP BY month_id, ct.customer_id;
+```
 
+<img width="283" alt="Screen Shot 2024-01-22 at 16 44 59" src="https://github.com/chile2706/8-week-sql/assets/147631781/c548b5f1-f614-49f2-a708-46f43eccf995">
+
+
+- Use `GROUP BY`, `COUNT()` and `WHERE` clause to count 
+```mysql
+SELECT a.month_id, COUNT(a.customer_id) AS total_customer
+FROM
+  (SELECT MONTH(ct.txn_date) AS month_id, ct.customer_id,
+    SUM(CASE WHEN ct.txn_type = 'deposit' THEN 1 ELSE 0 END) AS deposit,
+    SUM(CASE WHEN ct.txn_type = 'withdrawal' THEN 1 ELSE 0 END) AS withdrawal,
+    SUM(CASE WHEN ct.txn_type = 'purchase' THEN 1 ELSE 0 end) AS purchase
+  FROM customer_transactions ct
+  GROUP BY month_id, ct.customer_id;) a
+WHERE a.deposit > 1 AND (a.withdrawal = 1 OR a.purchase = 1)
+GROUP BY a.month_id
+ORDER BY a.month_id;
+```
+<img width="142" alt="Screen Shot 2024-01-22 at 16 43 08" src="https://github.com/chile2706/8-week-sql/assets/147631781/9474eabd-e240-46e7-86d7-f35a4bd79a24">
+
+#### 4. What is the closing balance for each customer at the end of the month?
+- Use `GROUP BY`, `CASE WHEN` to combine `txn_type` and `txn_amount` into `-(txn_amount)` or `txn_amount`, depends on 
+```MYSQL
+SELECT ct.customer_id,
+  MONTH(ct.txn_date) AS month_id, 
+  SUM(CASE WHEN ct.txn_type = 'deposit' THEN ct.txn_amount ELSE -ct.txn_amount END) AS total_txn
+FROM customer_transactions ct
+GROUP BY ct.customer_id,month_id
+ORDER BY ct.customer_id;
+```
+ 
+```MYSQL
+SELECT a.customer_id, 
+    SUM(CASE WHEN a.month_id = 1 THEN a.total_txn ELSE 0 END) AS jan_txn,
+    SUM(CASE WHEN a.month_id = 2 THEN a.total_txn ELSE 0 END) AS feb_txn,
+    SUM(CASE WHEN a.month_id = 3 THEN a.total_txn ELSE 0 END) AS mar_txn,
+    SUM(CASE WHEN a.month_id = 4 THEN a.total_txn ELSE 0 END) AS apr_txn
+  FROM 
+    (SELECT ct.customer_id,
+      MONTH(ct.txn_date) AS month_id, 
+      SUM(CASE WHEN ct.txn_type = 'deposit' THEN ct.txn_amount ELSE -ct.txn_amount END) AS total_txn
+    FROM customer_transactions ct
+    GROUP BY ct.customer_id,month_id
+    ORDER BY ct.customer_id) a
+  GROUP BY a.customer_id;
+```
+```mysql
+SELECT b.customer_id,
+  b.jan_txn AS jan_balance,
+  b.jan_txn + b.feb_txn AS feb_balance,
+  b.jan_txn + b.feb_txn + b.mar_txn AS mar_balance,
+  b.jan_txn + b.feb_txn + b.mar_txn + b.apr_txn AS apr_balance
+FROM
+  (SELECT a.customer_id, 
+    SUM(CASE WHEN a.month_id = 1 THEN a.total_txn ELSE 0 END) AS jan_txn,
+    SUM(CASE WHEN a.month_id = 2 THEN a.total_txn ELSE 0 END) AS feb_txn,
+    SUM(CASE WHEN a.month_id = 3 THEN a.total_txn ELSE 0 END) AS mar_txn,
+    SUM(CASE WHEN a.month_id = 4 THEN a.total_txn ELSE 0 END) AS apr_txn
+  FROM 
+    (SELECT ct.customer_id,
+      MONTH(ct.txn_date) AS month_id, 
+      SUM(CASE WHEN ct.txn_type = 'deposit' THEN ct.txn_amount ELSE -ct.txn_amount END) AS total_txn
+    FROM customer_transactions ct
+    GROUP BY ct.customer_id,month_id
+    ORDER BY ct.customer_id) a
+  GROUP BY a.customer_id) b;
+```
 
 #### 5. What is the percentage of customers who increase their closing balance by more than 5%?
 ### C. Data Allocation Challenge
