@@ -95,16 +95,81 @@ WHERE cn.end_date != '9999-12-31';
 #### 5. What is the median, 80th, and 95th percentile for this same reallocation days metric for each region?
 - Create view `percentile` to calculate the order of the relocation days for eadch percentile  
 ```mysql
-create view percentile as
-select a.region_id, round(a.total_relocate*0.5,0) as '50th', round(a.total_relocate*0.85,0) as '85th', round(a.total_relocate*0.9,0) as '90th'
-from
-(select cn.region_id, count(cn.customer_id) as total_relocate
-from customer_nodes cn
-where cn.end_date != '9999-12-31'
-group by cn.region_id
-order by cn.region_id) a;
+CREATE VIEW percentile AS
+SELECT a.region_id, ROUND(a.total_relocate*0.5,0) AS '50th', ROUND(a.total_relocate*0.85,0) AS '85th', ROUND(a.total_relocate*0.9,0) AS '90th'
+FROM
+(SELECT cn.region_id, COUNT(cn.customer_id) AS total_relocate
+FROM customer_nodes cn
+WHERE cn.end_date != '9999-12-31'
+GROUP BY cn.region_id
+ORDER BY cn.region_id) a;
 ```
 <img width="180" alt="Screen Shot 2024-01-18 at 16 44 52" src="https://github.com/chile2706/8-week-sql/assets/147631781/d163d210-5857-4f3f-a622-5b5164d4e8b0">
+
+- Unpivot the `percentile` view
+```mysql
+SELECT p.region_id, '50th' as percent, p.50th as ranking from percentile p
+UNION ALL
+SELECT p.region_id, '85th', p.85th FROM percentile p
+UNION ALL
+SELECT p.region_id, '90th', p.90th FROM percentile p;
+```
+
+<img width="147" alt="Screen Shot 2024-01-22 at 16 13 59" src="https://github.com/chile2706/8-week-sql/assets/147631781/af827db4-f2ac-42a7-b316-bfb395e8980a">
+
+
+- Use `ROW_NUMBER()` to assign the order to date diff to match with the relocation days for each percentile later.
+```MYSQL
+SELECT cn.region_id, DATEDIFF(cn.end_date, cn.start_date) AS days, ROW_NUMBER() OVER(PARTITION BY cn.region_id ORDER BY DATEDIFF(cn.end_date, cn.start_date)) AS ranking
+FROM customer_nodes cn
+WHERE cn.end_date != '9999-12-31'
+```
+<img width="136" alt="Screen Shot 2024-01-22 at 16 10 28" src="https://github.com/chile2706/8-week-sql/assets/147631781/ec0c9140-031d-4c77-91e4-5390e4789259">
+
+- Use `INNER JOIN` to join the latest two queries we just made `ON` the same `region_id` and `ranking` to get  the relocations day for each percentile
+```mysql
+SELECT a.region_id, a.percent, b.ranking, b.days
+FROM
+(SELECT p.region_id, '50th' as percent, p.50th as ranking from percentile p
+UNION ALL
+SELECT p.region_id, '85th', p.85th FROM percentile p
+UNION ALL
+select p.region_id, '90th', p.90th FROM percentile p) a
+INNER JOIN
+(SELECT cn.region_id, DATEDIFF(cn.end_date, cn.start_date) AS days, ROW_NUMBER() OVER(PARTITION BY cn.region_id ORDER BY DATEDIFF(cn.end_date, cn.start_date)) AS ranking
+FROM customer_nodes cn
+WHERE cn.end_date != '9999-12-31') b
+ON a.ranking = b.ranking AND a.region_id = b.region_id
+ORDER BY region_id;
+```
+<img width="182" alt="Screen Shot 2024-01-22 at 16 17 25" src="https://github.com/chile2706/8-week-sql/assets/147631781/5dfcdabc-a6da-4f95-a2c5-372ffa4cb9af">
+
+- Pivot the query for better format
+
+```mysql
+SELECT c.region_id, 
+SUM(CASE WHEN c.percent = '50th' THEN c.days ELSE 0 END ) AS '50th',
+SUM(CASE WHEN c.percent = '85th' THEN c.days ELSE 0 END ) AS '85th',
+SUM(CASE WHEN c.percent = '90th' THEN c.days ELSE 0 END ) AS '90th'
+FROM
+(SELECT a.region_id, a.percent, b.ranking, b.days
+FROM
+(SELECT p.region_id, '50th' as percent, p.50th as ranking from percentile p
+UNION ALL
+SELECT p.region_id, '85th', p.85th FROM percentile p
+UNION ALL
+select p.region_id, '90th', p.90th from percentile p) a
+INNER JOIN
+(SELECT cn.region_id, DATEDIFF(cn.end_date, cn.start_date) AS days, ROW_NUMBER() OVER(PARTITION BY cn.region_id ORDER BY DATEDIFF(cn.end_date, cn.start_date)) AS ranking
+FROM customer_nodes cn
+WHERE cn.end_date != '9999-12-31') b
+ON a.ranking = b.ranking AND a.region_id = b.region_id
+ORDER BY region_id) c
+GROUP BY c.region_id;
+```
+<img width="182" alt="Screen Shot 2024-01-22 at 16 19 18" src="https://github.com/chile2706/8-week-sql/assets/147631781/18514feb-7ef8-465b-bd89-55301b7a84ae">
+
+
 
 ### B. Customer Transactions
 ### C. Data Allocation Challenge
