@@ -167,9 +167,47 @@ ON a.ranking = b.ranking AND a.region_id = b.region_id
 ORDER BY region_id) c
 GROUP BY c.region_id;
 ```
+**Answers:**
+
 <img width="182" alt="Screen Shot 2024-01-22 at 16 19 18" src="https://github.com/chile2706/8-week-sql/assets/147631781/18514feb-7ef8-465b-bd89-55301b7a84ae">
 
 
 
 ### B. Customer Transactions
+#### 1. What is the unique count and total amount for each transaction type?
+- Use `GROUP BY()` and aggregate functions `COUNT(DISTINCT)` and `SUM` to calculate unique count and total amount of each transaction type
+
+```mysql
+SELECT ct.txn_type, COUNT(ct.txn_type) AS count, FORMAT(SUM(txn_amount),0) AS total_amount
+FROM customer_transactions ct
+GROUP BY ct.txn_type;
+```
+
+**Answers:**
+<img width="173" alt="Screen Shot 2024-01-22 at 16 24 19" src="https://github.com/chile2706/8-week-sql/assets/147631781/a2421565-2472-4d9d-8016-8e3ba0750b9c">
+
+#### 2. What is the average total historical deposit counts and amounts for all customers?
+- Use `COUNT(DISTINCT)` to determine the total customers that the bank has had overall
+
+```mysql
+SELECT COUNT(DISTINCT ct.customer_id) FROM customer_transactions ct;
+```
+<img width="166" alt="Screen Shot 2024-01-22 at 16 31 25" src="https://github.com/chile2706/8-week-sql/assets/147631781/6086f201-81d4-4ed2-8820-dd1a2b23ed24">
+
+- Use `COUNT()`, `SUM()` with `WHERE` clause - only choose `deposit` transaction type
+```mysql
+SELECT ROUND(COUNT(ct.txn_type)/ (SELECT COUNT(DISTINCT ct.customer_id) FROM customer_transactions ct),0) AS avg_count, 
+FORMAT(SUM(txn_amount)/ (SELECT COUNT(DISTINCT ct.customer_id) FROM customer_transactions ct),0) AS avg_total_amount
+FROM customer_transactions ct
+WHERE ct.txn_type = 'deposit';
+```
+**Answers:**
+<img width="166" alt="Screen Shot 2024-01-22 at 16 26 28" src="https://github.com/chile2706/8-week-sql/assets/147631781/8e20622d-564b-4f6f-a6f6-196dbcd58bfb">
+
+#### 3. For each month - how many Data Bank customers make more than 1 deposit and either 1 purchase or 1 withdrawal in a single month?
+
+#### 4. What is the closing balance for each customer at the end of the month?
+
+
+#### 5. What is the percentage of customers who increase their closing balance by more than 5%?
 ### C. Data Allocation Challenge
