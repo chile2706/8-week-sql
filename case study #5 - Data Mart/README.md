@@ -119,6 +119,7 @@ SELECT
   ROUND(ws.sales/ws.transactions, 2) AS avg_transaction
 FROM weekly_sales ws;
 ```
+**Table :** `clean_weekly_sales`
 
 <img width="973" alt="Screen Shot 2024-01-23 at 13 44 25" src="https://github.com/chile2706/8-week-sql/assets/147631781/a28d0d1f-b83d-49c3-b52c-0b656d563b50">
 
@@ -126,56 +127,116 @@ FROM weekly_sales ws;
 
 ### A. Data Exploration
 #### 1. What day of the week is used for each `week_date` value?
--
+- Use `DAYNAME()` and keyword `DISTINCT` to get the day of the week used in this case
 
 ```mysql
+SELECT DISTINCT DAYNAME(c.week_date) AS day_of_week
+FROM clean_weekly_sales c;
 ```
 
 **Answers:**
+
+<img width="78" alt="Screen Shot 2024-01-23 at 13 49 08" src="https://github.com/chile2706/8-week-sql/assets/147631781/2011f0a1-ce23-4527-9515-50bcaf350e1e">
+
+Thus, Monday is used for each `week_date` value
 
 #### 2. What range of week numbers are missing from the dataset?
--
+- Use keyword `DISTINCT` and `ORDER BY` to get the existing week numbers
 
 ```mysql
+SELECT DISTINCT c.week_number
+FROM clean_weekly_sales c
+ORDER BY c.week_number;
 ```
 
 **Answers:**
+
+<img width="78" alt="Screen Shot 2024-01-23 at 13 52 13" src="https://github.com/chile2706/8-week-sql/assets/147631781/5f9bd2b7-e491-47b0-b277-80f9fa90914f">
+
+Thus, we are missing week 1 to week 11 and week 36 to week 52
 
 
 #### 3. How many total transactions were there for each year in the dataset?
--
+- Use `GROUP BY` with `calendar_year` and `SUM()` to calculate total transactions for each YEAR
+- Use `FORMAT()` for better format
 
 ```mysql
+SELECT c.calendar_year AS year, FORMAT(SUM(c.transactions),0) AS total_transactions
+FROM clean_weekly_sales c
+GROUP BY c.calendar_year
+ORDER BY c.calendar_year DESC;
 ```
 
 **Answers:**
+
+<img width="148" alt="Screen Shot 2024-01-23 at 13 53 13" src="https://github.com/chile2706/8-week-sql/assets/147631781/58bf88a1-ec31-4ec5-a8d2-85cf3d7d86a9">
 
 
 #### 4. What is the total sales for each region for each month?
--
+> Unpivot table (bad format)
+- Use `GROUP BY` with `region`, `calendar_year`, `month_number` and `SUM()` to calculate total transactions for each REGION for each MONTH
 
 ```mysql
+SELECT c.region, c.calendar_year, c.month_number, FORMAT(SUM(c.sales),0) AS total_sales
+FROM clean_weekly_sales c
+GROUP BBY c.region, c.month_number, c.calendar_year
+ORDER BY c.region, c.calendar_year desc, c.month_number;
 ```
 
 **Answers:**
 
+<img width="342" alt="Screen Shot 2024-01-23 at 13 57 18" src="https://github.com/chile2706/8-week-sql/assets/147631781/1aa2f11d-4206-4bbc-ae67-5035bc14982c">
+  
+> Pivot table (good format)
+- Use `GROUP BY` with `calendar_year`, `month_number` for ROW
+- Use `CASE WHEN` with `regionn` and `SUM()` for COLUMN
+
+```mysql
+SELECT c.calendar_year, c.month_number, 
+FORMAT(SUM(CASE WHEN c.region = 'AFRICA' THEN c.sales ELSE 0 END),0) AS AFRICA,
+FORMAT(SUM(CASE WHEN c.region = 'ASIA' THEN c.sales ELSE 0 END),0) AS ASIA,
+FORMAT(SUM(CASE WHEN c.region = 'EUROPE' THEN c.sales ELSE 0 END),0) AS EUROPE,
+FORMAT(SUM(CASE WHEN c.region = 'OCEANIA' THEN c.sales ELSE 0 END),0) AS OCEANIA,
+FORMAT(SUM(CASE WHEN c.region = 'SOUTH_AMERICA' THEN c.sales ELSE 0 END),0) AS SOUTH_AMERICA,
+FORMAT(SUM(CASE WHEN c.region = 'USA' THEN c.sales ELSE 0 END),0) AS USA
+FROM clean_weekly_sales c
+GROUP BY c.calendar_year, c.month_number
+ORDER BY c.calendar_year DESC, c.month_number;
+```
+
+**Answers:**
+
+<img width="692" alt="Screen Shot 2024-01-23 at 13 57 52" src="https://github.com/chile2706/8-week-sql/assets/147631781/121fbe24-eff2-4ee2-a789-e84d3dc46658">
 
 #### 5. What is the total count of transactions for each platform
--
+- Use `GROUP BY` with `platform` and `SUM()` to get the total count of transactions of each PLATFORM
 
 ```mysql
+SELECT c.platform, FORMAT(SUM(c.transactions),0) AS total_transactions
+FROM clean_weekly_sales c
+GROUP BY c.platform;
 ```
 
 **Answers:**
+
+<img width="150" alt="Screen Shot 2024-01-23 at 14 06 18" src="https://github.com/chile2706/8-week-sql/assets/147631781/8c43d5f7-f9dd-4266-ab5a-d0b7fa0c4c5e">
 
 
 #### 6. What is the percentage of sales for Retail vs Shopify for each month?
--
+- `GROUP BY` and `CASE WHEN`
 
 ```mysql
+SELECT c.calendar_year, c.month_number,
+  ROUND(SUM(CASE WHEN c.platform = 'Shopify' THE c.sales ELSE 0 end)/SUM(c.sales)*100,2) AS shopify,
+  ROUND(SUM(CASE WHEN c.platform = 'Retail' THE c.sales ELSE 0 end)/SUM(c.sales)*100,2) AS retail
+FROM clean_weekly_sales c
+GROUP BY c.calendar_year, c.month_number
+ORDER BY c.calendar_year DESC, c.month_number;
 ```
 
 **Answers:**
+
+<img width="255" alt="Screen Shot 2024-01-23 at 14 06 56" src="https://github.com/chile2706/8-week-sql/assets/147631781/6538f7b3-0715-41e1-9b98-f41c32de6814">
 
 
 #### 7. What is the percentage of sales by demographic for each year in the dataset?
