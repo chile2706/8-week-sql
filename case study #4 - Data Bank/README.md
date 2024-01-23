@@ -1,4 +1,3 @@
-<img width="283" alt="Screen Shot 2024-01-22 at 16 44 59" src="https://github.com/chile2706/8-week-sql/assets/147631781/ed02f49e-df9b-48eb-9fe2-127a14333857"># Case Study #4 - Data Bank
 <img width ="500" src ="https://github.com/chile2706/8-week-sql/assets/147631781/27227b2a-f876-49ff-9769-79d56008f377">
 
 ## Table of Contents
@@ -273,6 +272,8 @@ SELECT a.customer_id,
     ORDER BY ct.customer_id) a
   GROUP BY a.customer_id;
 ```
+
+<img width="283" alt="Screen Shot 2024-01-22 at 16 44 59" src="https://github.com/chile2706/8-week-sql/assets/147631781/ed02f49e-df9b-48eb-9fe2-127a14333857"># Case Study #4 - Data Bank
 ```mysql
 SELECT b.customer_id,
   b.jan_txn AS jan_balance,
