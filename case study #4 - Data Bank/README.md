@@ -1,3 +1,4 @@
+# Case Study #4 - Data Bank
 <img width ="500" src ="https://github.com/chile2706/8-week-sql/assets/147631781/27227b2a-f876-49ff-9769-79d56008f377">
 
 ## Table of Contents
