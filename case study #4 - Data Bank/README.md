@@ -15,7 +15,7 @@ This case study is all about calculating metrics, growth and helping the busines
 
 ## Entity Relationship Diagram
 <img width="713" alt="Screen Shot 2024-01-18 at 16 02 49" src="https://github.com/chile2706/8-week-sql/assets/147631781/1119e016-d384-4bbe-be83-a62430f208f2">
-
+  
 
 **Table 1:** `regions`
 
@@ -27,6 +27,7 @@ This `regions` table contains the `region_id` and their respective `region_name`
 
 
 
+  
 **Table 2:** `customer_nodes`
 
 Customers are randomly distributed across the nodes according to their region - this also specifies exactly which node contains both their cash and data.
