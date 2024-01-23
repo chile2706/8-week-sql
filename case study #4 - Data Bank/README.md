@@ -301,6 +301,3 @@ FROM
 **Answers:**
 
 <img width="349" alt="Screen Shot 2024-01-22 at 16 53 44" src="https://github.com/chile2706/8-week-sql/assets/147631781/18bbda4f-aca3-4fa0-a530-77c63a1bcd4d">
-
-#### 5. What is the percentage of customers who increase their closing balance by more than 5%?
-### C. Data Allocation Challenge
