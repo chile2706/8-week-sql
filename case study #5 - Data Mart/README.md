@@ -240,21 +240,52 @@ ORDER BY c.calendar_year DESC, c.month_number;
 
 
 #### 7. What is the percentage of sales by demographic for each year in the dataset?
--
+- `GROUP BY` and `CASE WHEN`
 
 ```mysql
+SELECT c.calendar_year, 
+ROUND(SUM(CASE WHEN c.demographic = 'Couples' THEN c.sales ELSE 0 END)/SUM(c.sales)*100,2) AS couples,
+ROUND(SUM(CASE WHEN c.demographic = 'Families' THEN c.sales ELSE 0 END)/SUM(c.sales)*100,2) AS families,
+ROUND(SUM(CASE WHEN c.demographic IS NULL THEN c.sales ELSE 0 END)/SUM(c.sales)*100,2) AS 'null'
+FROM clean_weekly_sales c
+GROUP BY c.calendar_year
+ORDER BY c.calendar_year ASC;
 ```
 
 **Answers:**
+
+<img width="211" alt="Screen Shot 2024-01-23 at 14 11 21" src="https://github.com/chile2706/8-week-sql/assets/147631781/b07fa8d6-aa90-4863-b703-586fc7af2558">
 
 
 #### 8. Which `age_band` and `demographic` values contribute the most to Retail sales?
--
+- Use `GROUP BY` with `age_band` to calculate total sales of each age_band and then use `ORDER BY` combined with `LIMIT 1` to get the `age_band` that contributes the most
+- Use `UNION ALL` to combine both `age_band` and `demographic` in one query
 
 ```mysql
+SELECT 'age_band' AS category, a.age_band AS value
+FROM
+  (SELECT c.age_band, FORMAT(SUM(c.sales),0) AS total_sales
+  FROM clean_weekly_sales c
+  WHERE c.platform = 'Retail'
+  AND c.age_band IS NOT NULL
+  GROUP BY c.age_band
+  ORDER BY total_sales DESC
+  LIMIT 1) a
+UNION ALL
+SELECT 'demographic', b.demographic
+FROM
+  (SELECT c.demographic, FORMAT(SUM(c.sales),0) AS total_sales
+  FROM clean_weekly_sales c
+  WHERE c.platform = 'Retail'
+  AND c.demographic IS NOT NULL
+  GROUP BY c.demographic
+  ORDER BY total_sales desc
+  LIMIT 1) b;
 ```
 
 **Answers:**
+
+<img width="143" alt="Screen Shot 2024-01-23 at 14 18 18" src="https://github.com/chile2706/8-week-sql/assets/147631781/d158239f-02fc-4869-8898-7d1e6a386a91">
 
 
 #### 9. Can we use the `avg_transaction` column to find the average transaction size for each year for Retail vs Shopify? If not - how would you calculate it instead?
