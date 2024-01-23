@@ -1,4 +1,4 @@
-<img width ="500" src ="https://github.com/chile2706/8-week-sql/assets/147631781/27227b2a-f876-49ff-9769-79d56008f377">
+<img width="175" alt="Screen Shot 2024-01-22 at 17 03 15" src="https://github.com/chile2706/8-week-sql/assets/147631781/f8fb85e5-00db-4e85-b5b6-72c0f692d5e7"><img width ="500" src ="https://github.com/chile2706/8-week-sql/assets/147631781/27227b2a-f876-49ff-9769-79d56008f377">
 
 ## Table of Contents
 * [Case Study Introduction](#case-study-introduction)
@@ -247,7 +247,7 @@ ORDER BY a.month_id;
 <img width="142" alt="Screen Shot 2024-01-22 at 16 43 08" src="https://github.com/chile2706/8-week-sql/assets/147631781/9474eabd-e240-46e7-86d7-f35a4bd79a24">
 
 #### 4. What is the closing balance for each customer at the end of the month?
-- Use `GROUP BY`, `CASE WHEN` to combine `txn_type` and `txn_amount` into `-(txn_amount)` or `txn_amount`, depends on 
+- Use `GROUP BY`, `CASE WHEN` to combine `txn_type` and `txn_amount` into `-(txn_amount)` or `txn_amount`, depends on whether it is `deposit` or not
 ```MYSQL
 SELECT ct.customer_id,
   MONTH(ct.txn_date) AS month_id, 
@@ -256,7 +256,9 @@ FROM customer_transactions ct
 GROUP BY ct.customer_id,month_id
 ORDER BY ct.customer_id;
 ```
- 
+<img width="175" alt="Screen Shot 2024-01-22 at 17 03 15" src="https://github.com/chile2706/8-week-sql/assets/147631781/88a8e7ea-9094-4b26-b347-4e50f0fb9a3e">
+
+- Use `CASE WHEN` and `SUM()` to calculate total transaction of each month
 ```MYSQL
 SELECT a.customer_id, 
     SUM(CASE WHEN a.month_id = 1 THEN a.total_txn ELSE 0 END) AS jan_txn,
@@ -272,8 +274,9 @@ SELECT a.customer_id,
     ORDER BY ct.customer_id) a
   GROUP BY a.customer_id;
 ```
+<img width="255" alt="Screen Shot 2024-01-22 at 16 59 29" src="https://github.com/chile2706/8-week-sql/assets/147631781/18a3a513-7cbc-4955-aa6d-82c6565027e3">
 
-<img width="283" alt="Screen Shot 2024-01-22 at 16 44 59" src="https://github.com/chile2706/8-week-sql/assets/147631781/ed02f49e-df9b-48eb-9fe2-127a14333857"># Case Study #4 - Data Bank
+- Use `GROUP BY` to calculate the closing balance for each customer
 ```mysql
 SELECT b.customer_id,
   b.jan_txn AS jan_balance,
@@ -295,6 +298,9 @@ FROM
     ORDER BY ct.customer_id) a
   GROUP BY a.customer_id) b;
 ```
+**Answers:**
+
+<img width="349" alt="Screen Shot 2024-01-22 at 16 53 44" src="https://github.com/chile2706/8-week-sql/assets/147631781/18bbda4f-aca3-4fa0-a530-77c63a1bcd4d">
 
 #### 5. What is the percentage of customers who increase their closing balance by more than 5%?
 ### C. Data Allocation Challenge
