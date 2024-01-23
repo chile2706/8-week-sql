@@ -1,4 +1,4 @@
-<img width="175" alt="Screen Shot 2024-01-22 at 17 03 15" src="https://github.com/chile2706/8-week-sql/assets/147631781/f8fb85e5-00db-4e85-b5b6-72c0f692d5e7"><img width ="500" src ="https://github.com/chile2706/8-week-sql/assets/147631781/27227b2a-f876-49ff-9769-79d56008f377">
+<img width ="500" src ="https://github.com/chile2706/8-week-sql/assets/147631781/27227b2a-f876-49ff-9769-79d56008f377">
 
 ## Table of Contents
 * [Case Study Introduction](#case-study-introduction)
@@ -18,11 +18,13 @@ This case study is all about calculating metrics, growth and helping the busines
 
 
 **Table 1:** `regions`
+
 Data Bank runs off a network of nodes where both money and data are stored across the globe. We can think of these nodes as bank branches or stores that exist around the world.
 
 This `regions` table contains the `region_id` and their respective `region_name` values
 
 <img width="170" alt="Screen Shot 2024-01-18 at 16 10 23" src="https://github.com/chile2706/8-week-sql/assets/147631781/96ee45cf-7007-40d6-87ec-c34d6090c378">
+
 
 
 **Table 2:** `customer_nodes`
@@ -33,6 +35,7 @@ Customers are randomly distributed across the nodes according to their region - 
 
 
 **Table 3:** `customer_transactions`
+
 This table stores all customer deposits, withdrawals and purchases made using their Data Bank debit card.
 
 <img width="300" alt="Screen Shot 2024-01-18 at 16 11 08" src="https://github.com/chile2706/8-week-sql/assets/147631781/2749797c-9057-44fc-8785-2ab482fb7c89">
@@ -195,6 +198,7 @@ GROUP BY ct.txn_type;
 ```
 
 **Answers:**
+
 <img width="173" alt="Screen Shot 2024-01-22 at 16 24 19" src="https://github.com/chile2706/8-week-sql/assets/147631781/a2421565-2472-4d9d-8016-8e3ba0750b9c">
 
 #### 2. What is the average total historical deposit counts and amounts for all customers?
@@ -213,6 +217,7 @@ FROM customer_transactions ct
 WHERE ct.txn_type = 'deposit';
 ```
 **Answers:**
+
 <img width="166" alt="Screen Shot 2024-01-22 at 16 26 28" src="https://github.com/chile2706/8-week-sql/assets/147631781/8e20622d-564b-4f6f-a6f6-196dbcd58bfb">
 
 #### 3. For each month - how many Data Bank customers make more than 1 deposit and either 1 purchase or 1 withdrawal in a single month?
