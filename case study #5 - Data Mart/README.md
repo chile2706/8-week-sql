@@ -118,8 +118,88 @@ SELECT
   ws.customer_type, ws.transactions, ws.sales,
   ROUND(ws.sales/ws.transactions, 2) AS avg_transaction
 FROM weekly_sales ws;
-
 ```
+
+<img width="973" alt="Screen Shot 2024-01-23 at 13 44 25" src="https://github.com/chile2706/8-week-sql/assets/147631781/a28d0d1f-b83d-49c3-b52c-0b656d563b50">
+
 ## Case Study Questions
-### A. Customer Nodes Exploration
-#### 1. How many unique nodes are there in the Data Bank system?
+
+### A. Data Exploration
+#### 1. What day of the week is used for each `week_date` value?
+-
+
+```mysql
+```
+
+**Answers:**
+
+#### 2. What range of week numbers are missing from the dataset?
+-
+
+```mysql
+```
+
+**Answers:**
+
+
+#### 3. How many total transactions were there for each year in the dataset?
+-
+
+```mysql
+```
+
+**Answers:**
+
+
+#### 4. What is the total sales for each region for each month?
+-
+
+```mysql
+```
+
+**Answers:**
+
+
+#### 5. What is the total count of transactions for each platform
+-
+
+```mysql
+```
+
+**Answers:**
+
+
+#### 6. What is the percentage of sales for Retail vs Shopify for each month?
+-
+
+```mysql
+```
+
+**Answers:**
+
+
+#### 7. What is the percentage of sales by demographic for each year in the dataset?
+-
+
+```mysql
+```
+
+**Answers:**
+
+
+#### 8. Which `age_band` and `demographic` values contribute the most to Retail sales?
+-
+
+```mysql
+```
+
+**Answers:**
+
+
+#### 9. Can we use the `avg_transaction` column to find the average transaction size for each year for Retail vs Shopify? If not - how would you calculate it instead?
+-
+
+```mysql
+```
+
+**Answers:**
