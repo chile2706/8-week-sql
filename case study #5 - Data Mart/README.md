@@ -286,6 +286,7 @@ FROM
 **Answers:**
 
 <img width="143" alt="Screen Shot 2024-01-23 at 14 18 18" src="https://github.com/chile2706/8-week-sql/assets/147631781/d158239f-02fc-4869-8898-7d1e6a386a91">
+
 Thus, if not taking unkown `demographic` and `age_band` into account, `Middled Aged` and `Families` contribute the most to `total_sales`
 
 #### 9. Can we use the `avg_transaction` column to find the average transaction size for each year for Retail vs Shopify? If not - how would you calculate it instead?
@@ -301,6 +302,7 @@ GROUP BY c.calendar_year;
 ```
 
 **Answers:**
+
 <img width="160" alt="Screen Shot 2024-01-24 at 13 35 34" src="https://github.com/chile2706/8-week-sql/assets/147631781/16a6ba7c-9d75-4b4d-a188-08ae7d4cabaa">
 
 ### B. Before & After Analysis
@@ -349,6 +351,7 @@ FROM
 
 #### 3. How do the sale metrics for these 2 periods before and after compare with the previous years in 2018 and 2019?
 - Use `GROUP BY` with `calendar_year` and `CASE` to get the data for 2 periods for each year
+
 ```mysql
 SELECT c.calendar_year,
   FORMAT(SUM(CASE WHEN MONTH(c.week_date) > 6 OR (MONTH(c.week_date) = 6 AND DAY(c.week_date) >= 15) THEN c.sales ELSE 0 END),0) AS sale_after,
@@ -358,3 +361,7 @@ GROUP BY c.calendar_year;
 ```
 
 **Answers:**
+
+<img width="234" alt="Screen Shot 2024-01-24 at 13 52 07" src="https://github.com/chile2706/8-week-sql/assets/147631781/57eb8546-febb-4ed0-9c1d-3e76385677a2">
+
+- As we can see, even though the total sales of the period after implementing sustainable packaging methods was higher than that period of time in 2018 and 2019, it was less than the total sales of the period before using the sustainable packaging methods in 2020.
