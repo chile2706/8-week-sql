@@ -286,12 +286,75 @@ FROM
 **Answers:**
 
 <img width="143" alt="Screen Shot 2024-01-23 at 14 18 18" src="https://github.com/chile2706/8-week-sql/assets/147631781/d158239f-02fc-4869-8898-7d1e6a386a91">
-
+Thus, if not taking unkown `demographic` and `age_band` into account, `Middled Aged` and `Families` contribute the most to `total_sales`
 
 #### 9. Can we use the `avg_transaction` column to find the average transaction size for each year for Retail vs Shopify? If not - how would you calculate it instead?
--
+- We can not use the `avg_transaction` to find the average transactionn size for each year
+- Instead, we need to use `GROUP BY` and `CASE WHEN` to get the sum of total_sales and then number of transactions for each platform for each year
 
 ```mysql
+SELECT c.calendar_year,
+ROUND(SUM(CASE WHEN c.platform = 'Retail' THEN c.sales ELSE 0 END)/SUM(CASE WHEN c.platform = 'Retail' THEN c.transactions ELSE 0 END),2) AS retail,
+ROUND(SUM(CASE WHEN c.platform = 'Shopify' THEN c.sales ELSE 0 END)/SUM(CASE WHEN c.platform = 'Shopify' THEN c.transactions ELSE 0 END),2) AS shopify
+FROM clean_weekly_sales c
+GROUP BY c.calendar_year;
+```
+
+**Answers:**
+<img width="160" alt="Screen Shot 2024-01-24 at 13 35 34" src="https://github.com/chile2706/8-week-sql/assets/147631781/16a6ba7c-9d75-4b4d-a188-08ae7d4cabaa">
+
+### B. Before & After Analysis
+Taking the `week_date` value of `2020-06-15` as the baseline week where the Data Mart sustainable packaging changes came into effect.
+
+We would include all `week_date` values for `2020-06-15` as the start of the period **after** the change and the previous week_date values would be **before**
+
+Using this analysis approach - answer the following questions:
+
+#### 1. What is the total sales for the 4 weeks before and after 2020-06-15? What is the growth or reduction rate in actual values and percentage of sales?
+- Use `DATE_ADD()`, `DATE_SUB()` and `CASE` to get data for 4 weeks before and after `2020-06-15`
+```mysql
+SELECT
+  FORMAT(a.sale_after - a.sale_before, 0) AS actual_value,
+  ROUND((a.sale_after - a.sale_before)/a.sale_before*100, 2) AS percentage
+FROM
+  (SELECT 
+    SUM(CASE WHEN c.week_date BETWEEN '2020-06-15' AND DATE_ADD('2020-06-15', INTERVAL 3 WEEK) THEN c.sales ELSE 0 END) AS sale_after,
+    SUM(CASE WHEN c.week_date BETWEEN DATE_SUB('2020-06-15', INTERVAL 4 WEEK) AND DATE_SUB('2020-06-15', INTERVAL 1 WEEK)
+      THEN c.sales ELSE 0 END) AS sale_before
+  FROM clean_weekly_sales c) a;
+```
+
+**Answers:**
+
+<img width="217" alt="Screen Shot 2024-01-24 at 13 42 00" src="https://github.com/chile2706/8-week-sql/assets/147631781/f639820b-87f8-483c-8ce8-569be5c90f4f">
+
+#### 2. What about the entire 12 weeks before and after?
+- Same approach as Q1: `DATE_ADD()`, `DATE_SUB()` and `CASE`
+  
+```mysql
+SELECT
+  FORMAT(a.sale_after - a.sale_before, 0) AS actual_value,
+  ROUND((a.sale_after - a.sale_before)/a.sale_before*100, 2) AS percentage
+FROM
+  (SELECT 
+    SUM(CASE WHEN c.week_date BETWEEN '2020-06-15' AND DATE_ADD('2020-06-15', INTERVAL 11 WEEK) THEN c.sales ELSE 0 END) AS sale_after,
+    SUM(CASE WHEN c.week_date BETWEEN DATE_SUB('2020-06-15', INTERVAL 12 WEEK) AND DATE_SUB('2020-06-15', INTERVAL 1 WEEK)
+      THEN c.sales ELSE 0 END) AS sale_before
+  FROM clean_weekly_sales c) a;
+```
+
+**Answers:**
+
+<img width="217" alt="Screen Shot 2024-01-24 at 13 48 25" src="https://github.com/chile2706/8-week-sql/assets/147631781/30f9c66d-073e-4039-949a-41aca6508c1e">
+
+#### 3. How do the sale metrics for these 2 periods before and after compare with the previous years in 2018 and 2019?
+- Use `GROUP BY` with `calendar_year` and `CASE` to get the data for 2 periods for each year
+```mysql
+SELECT c.calendar_year,
+  FORMAT(SUM(CASE WHEN MONTH(c.week_date) > 6 OR (MONTH(c.week_date) = 6 AND DAY(c.week_date) >= 15) THEN c.sales ELSE 0 END),0) AS sale_after,
+  FORMAT(SUM(CASE WHEN MONTH(c.week_date) < 6 OR (MONTH(c.week_date) = 6 AND DAY(c.week_date) < 15) THEN c.sales ELSE 0 END),0) AS sale_before
+FROM clean_weekly_sales c
+GROUP BY c.calendar_year;
 ```
 
 **Answers:**
